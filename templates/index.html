@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Multi Audio & Video Merger</title>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f4f4f4;
+    padding: 30px;
+  }
+  .container {
+    max-width: 600px;
+    margin: auto;
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  h2 {
+    text-align: center;
+    color: #333;
+  }
+  label {
+    font-weight: bold;
+    margin-top: 15px;
+    display: block;
+  }
+  input[type=file] {
+    margin-top: 8px;
+  }
+  button {
+    margin-top: 20px;
+    padding: 10px 15px;
+    background: #007BFF;
+    border: none;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #0056b3;
+  }
+  p.status {
+    margin-top: 15px;
+    color: green;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>Merge Multiple MP3 Files</h2>
+  <form id="audioForm">
+    <label>Select MP3 files (2 or more):</label>
+    <input type="file" id="audioFiles" name="files[]" accept=".mp3" multiple required />
+    <button type="submit">Merge Audio</button>
+  </form>
+  <p class="status" id="audioStatus"></p>
+
+  <hr>
+
+  <h2>Merge Multiple MP4 Videos</h2>
+  <form id="videoForm">
+    <label>Select MP4 video files (2 or more):</label>
+    <input type="file" id="videoFiles" name="files[]" accept=".mp4" multiple required />
+    <button type="submit">Merge Videos</button>
+  </form>
+  <p class="status" id="videoStatus"></p>
+</div>
+
+<script>
+  document.getElementById("audioForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const files = document.getElementById("audioFiles").files;
+    const status = document.getElementById("audioStatus");
+    status.textContent = '';
+
+    if (files.length < 2) {
+      status.textContent = "Please select at least 2 MP3 files.";
+      status.style.color = "red";
+      return;
+    }
+
+    const formData = new FormData();
+    for (const file of files) {
+      formData.append("files[]", file);
+    }
+
+    try {
+      const response = await fetch('/merge_audio', {
+        method: 'POST',
+        body: formData
+      });
+      if (!response.ok) throw new Error('Failed to merge audio');
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'merged_audio.mp3';
+      a.click();
+      status.textContent = "Audio merged successfully!";
+      status.style.color = "green";
+    } catch (err) {
+      status.textContent = 'Error: ' + err.message;
+      status.style.color = "red";
+    }
+  });
+
+  document.getElementById("videoForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const files = document.getElementById("videoFiles").files;
+    const status = document.getElementById("videoStatus");
+    status.textContent = '';
+
+    if (files.length < 2) {
+      status.textContent = "Please select at least 2 MP4 files.";
+      status.style.color = "red";
+      return;
+    }
+
+    const formData = new FormData();
+    for (const file of files) {
+      formData.append("files[]", file);
+    }
+
+    try {
+      const response = await fetch('/merge_video', {
+        method: 'POST',
+        body: formData
+      });
+      if (!response.ok) throw new Error('Failed to merge videos');
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'merged_video.mp4';
+      a.click();
+      status.textContent = "Videos merged successfully!";
+      status.style.color = "green";
+    } catch (err) {
+      status.textContent = 'Error: ' + err.message;
+      status.style.color = "red";
+    }
+  });
+</script>
+</body>
+</html>
